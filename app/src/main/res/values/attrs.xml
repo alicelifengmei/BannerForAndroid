@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="MyBanner">
+        <!--滑动动画的执行时间-->
+        <attr name="scroll_time" format="integer"/>
+        <!--图片的伸缩属性-->
+        <attr name="image_scale_model" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="center_crop" value="1"/>
+            <enum name="center_inside" value="2"/>
+            <enum name="fit_center" value="3"/>
+            <enum name="fit_end" value="4"/>
+            <enum name="fit_start" value="5"/>
+            <enum name="fit_xy" value="6"/>
+            <enum name="matrix" value="7"/>
+        </attr>
+        <!--底部文字和indicator的背景色，默认无背景色-->
+        <attr name="title_indicator_bg_color" format="reference"/>
+        <!--文字说明相关属性大小颜色边距可见gravity-->
+        <attr name="title_size" format="dimension"/>
+        <attr name="title_color" format="color"/>
+        <attr name="title_margin" format="dimension"/>
+        <attr name="title_visible" format="boolean"/>
+        <attr name="title_gravity" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="left" value="1"/>
+            <enum name="right" value="2"/>
+        </attr>
+        <!--indicator的宽、高、边距、选中与否的资源、gravity-->
+        <attr name="indicator_width" format="dimension"/>
+        <attr name="indicator_height" format="dimension"/>
+        <attr name="indicator_margin_left" format="dimension"/>
+        <attr name="indicator_margin_top" format="dimension"/>
+        <attr name="indicator_margin_right" format="dimension"/>
+        <attr name="indicator_margin_bottom" format="dimension"/>
+        <attr name="indicator_selected_src" format="reference"/>
+        <attr name="indicator_unselected_src" format="reference"/>
+        <attr name="indicator_gravity" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="left" value="1"/>
+            <enum name="right" value="2"/>
+        </attr>
+
+
+    </declare-styleable>
+</resources>
