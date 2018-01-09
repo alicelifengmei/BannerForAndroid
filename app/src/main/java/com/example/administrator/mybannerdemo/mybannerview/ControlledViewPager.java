@@ -10,14 +10,14 @@ import android.view.MotionEvent;
  * 可以通过scrollable字段在外部控制viewpager是否可以轮播的自定义viewpager
  */
 
-public class MyViewPager extends ViewPager {
+public class ControlledViewPager extends ViewPager {
     private boolean scrollable = true;
 
-    public MyViewPager(Context context) {
+    public ControlledViewPager(Context context) {
         super(context);
     }
 
-    public MyViewPager(Context context, AttributeSet attrs) {
+    public ControlledViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 

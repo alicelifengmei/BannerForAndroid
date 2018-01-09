@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <declare-styleable name="MyBanner">
+    <declare-styleable name="RecyclerBanner">
         <!--滑动动画的执行时间-->
         <attr name="scroll_time" format="integer"/>
         <!--图片的伸缩属性-->

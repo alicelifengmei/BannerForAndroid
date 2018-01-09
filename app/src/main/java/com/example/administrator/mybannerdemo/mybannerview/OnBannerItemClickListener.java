@@ -5,6 +5,6 @@ package com.example.administrator.mybannerdemo.mybannerview;
  * item的点击事件
  */
 
-public interface OnMyItemClickListener {
+public interface OnBannerItemClickListener {
     void onItemClick(int position);
 }

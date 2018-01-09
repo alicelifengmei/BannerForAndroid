@@ -8,6 +8,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.AbsoluteSizeSpan;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -40,17 +43,18 @@ import java.util.List;
  * 在代码中可以设置：
  * 1，设置要播放的图片资源，可以是本地的也可以是网络图片：setImageReses(List<?> imageReses)
  * 2，设置图片对应的说明文字：setTitles(String[] titles)
- * 3，设置每个item的点击事件：setOnItemClickLIstener(OnMyItemClickListener onMyItemClickListener)
- * 4，图片加载方式：setImageLoader(MyImageLoaderInterface imageLoader)
+ * 3，设置每个item的点击事件：setOnItemClickLIstener(OnBannerItemClickListener onMyItemClickListener)
+ * 4，图片加载方式：setImageLoader(ImageLoaderInterface imageLoader)
  * 5，设置切换间隔时间：setDelayTime(long delayTime)
  * 6，设置播放动画样式：setPageTransformer(ViewPager.PageTransformer pageTransformer)
+ * 7，设置
  */
 
-public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListener{
+public class RecyclerBanner extends FrameLayout implements ViewPager.OnPageChangeListener{
     private String tag = "MyBanner";
 
     private Context mContext;
-    private MyViewPager viewPager;
+    private ControlledViewPager viewPager;
     private LinearLayout llContain;
     private LinearLayout llIndicators;
     private TextView tvTitle;
@@ -62,7 +66,7 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
     private ViewPagerAdapter adapter;//viewpager的adapter
     //----以下为xml设置的属性
     private int scaleType = 1;//图片在控件中的伸缩方式，默认1是centerCrop
-    private int llBgColor;//说明文字和指示图片的背景图
+    private int llBgColor;//说明文字和指示图片整块区域的背景图
     private boolean titleVisible = false;//说明文字是否展示，默认false
     private int titleSize;
     private int titleColor;
@@ -86,20 +90,24 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
     private int scrollTime = 800;//轮播动画执行的时间
     private boolean isAutoPlay = true;
     private boolean isScroll = true;//是否可以滚动，默认可以滚动，只有一张图片时不可以滚动
-    private OnMyItemClickListener onMyItemClickListener;//点击item的点击事件
+    private OnBannerItemClickListener onMyItemClickListener;//点击item的点击事件
     private WeakHandler mHandler = new WeakHandler();//发送轮播任务的弱引用handler，避免了内存泄露
-    private MyImageLoaderInterface imageLoader;//图片的加载方式，自己集成接口实现
+    private ImageLoaderInterface<ImageView> imageLoader;//图片的加载方式，自己集成接口实现
+
+    private int bannerStyle = BannerConfig.CIRCLE_INDICATOR;//指示器类型，默认是小圆点，也可以设置右下角数字
+    private TextView tvNumIndicator;
+    private boolean isRecycle = true;//是否可以循环，默认是
 
 
-    public MyBanner(@NonNull Context context) {
+    public RecyclerBanner(@NonNull Context context) {
         this(context, null);
     }
 
-    public MyBanner(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public RecyclerBanner(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MyBanner(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
+    public RecyclerBanner(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.mContext = context;
         imageViews = new ArrayList<>();
@@ -109,37 +117,48 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
         initView(attrs,defStyleAttr);
     }
 
+    /**
+     * 设置指示器类型：底部中间小圆点，或者底部右侧数字
+     * @param bannerStyle
+     * @return
+     */
+    public RecyclerBanner setBannerStyle(int bannerStyle) {
+        this.bannerStyle = bannerStyle;
+        return this;
+    }
+
     private void initView(AttributeSet attrs, int defStyleAttr) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.view_my_banner,this,true);//TODO 调查一下true和false的区别
-        viewPager = (MyViewPager) view.findViewById(R.id.vp_pics);
+        viewPager = (ControlledViewPager) view.findViewById(R.id.vp_pics);
         llContain = (LinearLayout) view.findViewById(R.id.ll_contain);
         tvTitle = (TextView) view.findViewById(R.id.tv_title);
         llIndicators = (LinearLayout) view.findViewById(R.id.ll_indicators);
+        tvNumIndicator = (TextView) view.findViewById(R.id.numIndicator);
         initTypedArray(attrs, defStyleAttr);
         initViewPagerScroll();
 
     }
 
     private void initTypedArray(AttributeSet attrs, int defStyleAttr) {
-        TypedArray typedArray = mContext.obtainStyledAttributes(attrs,R.styleable.MyBanner,defStyleAttr,0);//注意四个参数的方法
+        TypedArray typedArray = mContext.obtainStyledAttributes(attrs, R.styleable.RecyclerBanner,defStyleAttr,0);//注意四个参数的方法
         if(typedArray != null){
-            scrollTime = typedArray.getInt(R.styleable.MyBanner_scroll_time, 800);
-            scaleType = typedArray.getInt(R.styleable.MyBanner_image_scale_model,1);
-            llBgColor = typedArray.getResourceId(R.styleable.MyBanner_title_indicator_bg_color,Color.TRANSPARENT);
-            titleVisible = typedArray.getBoolean(R.styleable.MyBanner_title_visible,false);
-            titleSize = typedArray.getDimensionPixelSize(R.styleable.MyBanner_title_size,32);
-            titleColor = typedArray.getColor(R.styleable.MyBanner_title_color,Color.BLACK);
-            titleGravity = typedArray.getInt(R.styleable.MyBanner_title_gravity,0);
-            titleMargin = typedArray.getDimensionPixelSize(R.styleable.MyBanner_title_margin,10);
-            indicatorWidth = typedArray.getDimensionPixelSize(R.styleable.MyBanner_indicator_width,6);
-            indicatorHeight = typedArray.getDimensionPixelSize(R.styleable.MyBanner_indicator_height,6);
-            indicatorMarginLeft = typedArray.getDimensionPixelSize(R.styleable.MyBanner_indicator_margin_left,3);
-            indicatorMarginTop = typedArray.getDimensionPixelSize(R.styleable.MyBanner_indicator_margin_top,3);
-            indicatorMarginRight = typedArray.getDimensionPixelSize(R.styleable.MyBanner_indicator_margin_right,3);
-            indicatorMarginBottom = typedArray.getDimensionPixelSize(R.styleable.MyBanner_indicator_margin_bottom,3);
-            indicatorSelectedSrc = typedArray.getResourceId(R.styleable.MyBanner_indicator_selected_src,R.drawable.ic_page_indicator_focused);
-            indicatorUnSelectedSrc = typedArray.getResourceId(R.styleable.MyBanner_indicator_unselected_src,R.drawable.ic_page_indicator);
-            indicatorGravity = typedArray.getInt(R.styleable.MyBanner_indicator_gravity,0);
+            scrollTime = typedArray.getInt(R.styleable.RecyclerBanner_scroll_time, 800);
+            scaleType = typedArray.getInt(R.styleable.RecyclerBanner_image_scale_model,1);
+            llBgColor = typedArray.getResourceId(R.styleable.RecyclerBanner_title_indicator_bg_color,Color.TRANSPARENT);
+            titleVisible = typedArray.getBoolean(R.styleable.RecyclerBanner_title_visible,false);
+            titleSize = typedArray.getDimensionPixelSize(R.styleable.RecyclerBanner_title_size,32);
+            titleColor = typedArray.getColor(R.styleable.RecyclerBanner_title_color,Color.BLACK);
+            titleGravity = typedArray.getInt(R.styleable.RecyclerBanner_title_gravity,0);
+            titleMargin = typedArray.getDimensionPixelSize(R.styleable.RecyclerBanner_title_margin,10);
+            indicatorWidth = typedArray.getDimensionPixelSize(R.styleable.RecyclerBanner_indicator_width,6);
+            indicatorHeight = typedArray.getDimensionPixelSize(R.styleable.RecyclerBanner_indicator_height,6);
+            indicatorMarginLeft = typedArray.getDimensionPixelSize(R.styleable.RecyclerBanner_indicator_margin_left,3);
+            indicatorMarginTop = typedArray.getDimensionPixelSize(R.styleable.RecyclerBanner_indicator_margin_top,3);
+            indicatorMarginRight = typedArray.getDimensionPixelSize(R.styleable.RecyclerBanner_indicator_margin_right,3);
+            indicatorMarginBottom = typedArray.getDimensionPixelSize(R.styleable.RecyclerBanner_indicator_margin_bottom,3);
+            indicatorSelectedSrc = typedArray.getResourceId(R.styleable.RecyclerBanner_indicator_selected_src,R.drawable.ic_page_indicator_focused);
+            indicatorUnSelectedSrc = typedArray.getResourceId(R.styleable.RecyclerBanner_indicator_unselected_src,R.drawable.ic_page_indicator);
+            indicatorGravity = typedArray.getInt(R.styleable.RecyclerBanner_indicator_gravity,0);
             typedArray.recycle();
         }
     }
@@ -151,7 +170,7 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
         try {
             Field mField = ViewPager.class.getDeclaredField("mScroller");
             mField.setAccessible(true);
-            MyBannerScroller mScroller = new MyBannerScroller(viewPager.getContext());
+            BannerScroller mScroller = new BannerScroller(viewPager.getContext());
             mScroller.setDuration(scrollTime);
             mField.set(viewPager, mScroller);
         } catch (Exception e) {
@@ -160,8 +179,28 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
     }
 
     public void start() {//要播放时再将所有的数据拿过来拼接
+        setBannerStyleUI();
         setImageViewList(imageReses);
         setData();
+    }
+
+    /**
+     * 设置是否可以循环，默认是循环
+     * @param isRecycle
+     */
+    public void setIsRecycle(boolean isRecycle){
+        this.isRecycle = isRecycle;
+    }
+
+    /**
+     * 设置是否自动播放，默认自动播放
+     * @param isAutoPlay
+     */
+    public void setAutoPlay(boolean isAutoPlay){
+        this.isAutoPlay = isAutoPlay;
+        if(isAutoPlay){//自动播放肯定是需要循环的
+            this.isRecycle = true;
+        }
     }
 
     /***
@@ -184,7 +223,7 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
     private final Runnable task = new Runnable() {
         @Override
         public void run() {
-            if (count > 1 && isAutoPlay) {//自动播放默认顺序是从左到右的顺序
+            if (count > 1 && isAutoPlay) {//自动播放默认顺序是从左到右的顺序,
                 currentItem = currentItem % (count + 1) + 1;//切换到下一个
                 if (currentItem == 1) {
                     viewPager.setCurrentItem(currentItem, false);//不需要动画的切换
@@ -197,6 +236,19 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
         }
     };
 
+    private void setBannerStyleUI() {
+        int visibility;
+        if (count > 1) visibility = View.VISIBLE;//只有一张图不展示数字提示小脚标
+        else visibility = View.GONE;
+        switch (bannerStyle) {
+            case BannerConfig.CIRCLE_INDICATOR:
+                llIndicators.setVisibility(visibility);
+                break;
+            case BannerConfig.NUM_INDICATOR:
+                tvNumIndicator.setVisibility(VISIBLE);
+                break;
+        }
+    }
     /***
      * 初始化要展示的item，文字说明title，选中指示图片indicator
      * @param imagesUrls
@@ -208,31 +260,58 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
         }
         llContain.setBackgroundResource(llBgColor);
         initTitle();
-        createIndicator();
-        for (int i = 0; i <= count + 1; i++) {
-            View imageView = null;
-            if (imageLoader != null) {
-                imageView = imageLoader.createImageView(mContext);
+        initImages();
+//        createIndicator();
+        if(isRecycle){//可循环
+
+            for (int i = 0; i <= count + 1; i++) {
+                ImageView imageView = null;
+                if (imageLoader != null) {
+                    imageView = imageLoader.createImageView(mContext);
+                }
+                if (imageView == null) {
+                    imageView = new ImageView(mContext);
+                    imageView.setImageResource(R.drawable.default_icon);
+                }
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                setScaleType(imageView);
+                Object url = null;//加载的时候有没有屏蔽null的机制
+                if (i == 0) {//第0张放最后一张的图，
+                    url = imagesUrls.get(count - 1);
+                } else if (i == count + 1) {
+                    url = imagesUrls.get(0);
+                } else {
+                    url = imagesUrls.get(i - 1);
+                }
+                if (imageLoader != null)
+                    imageLoader.displayImage(mContext, url, imageView);
+                else{
+                    imageView.setBackgroundResource(R.drawable.default_icon);
+                    Log.e(tag, "Please set images loader.");
+                }
+                imageViews.add(imageView);
             }
-            if (imageView == null) {
-                imageView = new ImageView(mContext);
+        }else{//不可循环
+            for (int i = 0; i < count; i++) {
+                ImageView imageView = null;
+                if (imageLoader != null) {
+                    imageView = imageLoader.createImageView(mContext);
+                }
+                if (imageView == null) {
+                    imageView = new ImageView(mContext);
+                    imageView.setImageResource(R.drawable.default_icon);
+                }
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                setScaleType(imageView);
+                Object url = imagesUrls.get(i);
+                if (imageLoader != null)
+                    imageLoader.displayImage(mContext, url, imageView);
+                else{
+                    imageView.setBackgroundResource(R.drawable.default_icon);
+                    Log.e(tag, "Please set images loader.");
+                }
+                imageViews.add(imageView);
             }
-            setScaleType(imageView);
-            Object url = null;//加载的时候有没有屏蔽null的机制
-            if (i == 0) {
-                url = imagesUrls.get(count - 1);
-            } else if (i == count + 1) {
-                url = imagesUrls.get(0);
-            } else {
-                url = imagesUrls.get(i - 1);
-            }
-            if (imageLoader != null)
-                imageLoader.displayImage(mContext, url, imageView);
-            else{
-                imageView.setBackgroundResource(R.drawable.default_icon);
-                Log.e(tag, "Please set images loader.");
-            }
-            imageViews.add(imageView);
         }
     }
 
@@ -306,6 +385,17 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
         }
     }
 
+    private void initImages() {
+        imageViews.clear();
+        if (bannerStyle == BannerConfig.CIRCLE_INDICATOR ) {
+            createIndicator();
+        } else if (bannerStyle == BannerConfig.NUM_INDICATOR) {
+            SpannableString sStr = new SpannableString("1/" + count);
+            sStr.setSpan(new AbsoluteSizeSpan(18,true), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            tvNumIndicator.setText(sStr);
+        }
+    }
+
     /***
      * 初始化指示图片的view
      */
@@ -315,16 +405,16 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
         for (int i = 0; i < count; i++) {
             ImageView imageView = new ImageView(mContext);
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(indicatorWidth, indicatorHeight);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, indicatorHeight);
             params.leftMargin = indicatorMarginLeft;
             params.topMargin = indicatorMarginTop;
             params.rightMargin = indicatorMarginRight;
             params.bottomMargin = indicatorMarginBottom;
-            if (i == 0) {
-                imageView.setBackgroundResource(indicatorSelectedSrc);
-            } else {
-                imageView.setBackgroundResource(indicatorUnSelectedSrc);
-            }
+//            if (i == 0) {
+//                imageView.setBackgroundResource(indicatorSelectedSrc);
+//            } else {
+            imageView.setBackgroundResource(indicatorUnSelectedSrc);
+//            }
             indicatorViews.add(imageView);
             llIndicators.addView(imageView,params);
             switch (indicatorGravity){//设置指示图标的摆放：中 左 右
@@ -346,16 +436,26 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
      * 将要展示的数据填充
      */
     private void setData() {
-        currentItem = 1;
         if (adapter == null) {
             adapter = new ViewPagerAdapter();
             viewPager.addOnPageChangeListener(this);
         }
         viewPager.setAdapter(adapter);
         viewPager.setFocusable(true);
+//        viewPager.setOffscreenPageLimit(1);//设置预加载个数，不能小于1
         //默认第一张图选中状态
-        viewPager.setCurrentItem(1,false);
-        indicatorViews.get(0).setImageResource(indicatorSelectedSrc);
+        if(isRecycle){
+            viewPager.setCurrentItem(1,false);
+            lastPosition = 1;
+            currentItem = 1;
+        }else{
+            viewPager.setCurrentItem(0,false);
+            lastPosition = 0;
+            currentItem = 0;
+        }
+        if(bannerStyle == BannerConfig.CIRCLE_INDICATOR){
+            indicatorViews.get(0).setImageResource(indicatorSelectedSrc);
+        }
         if (isScroll && count > 1) {//只有一张图且设置可以滚动时 才可以滚动
             viewPager.setScrollable(true);
         } else {
@@ -372,13 +472,46 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
 
     @Override
     public void onPageSelected(int position) {//item被选中时
-        //思路很简单：因为有错位，所以对应关系都是position-1，由于滑到两头的时候会造成position-1成负，或者超出实际数量，所以用+count再与count求模运算一下
-        indicatorViews.get((lastPosition - 1 + count) % count).setImageResource(indicatorUnSelectedSrc);
-        indicatorViews.get((position - 1 + count) % count).setImageResource(indicatorSelectedSrc);
-        if(titles != null && titles.length>0 && titleVisible){
-            tvTitle.setText(titles[(position - 1 + count) % count]);
+        if(isRecycle){//需要循环
+            if (position == 0) position = count;
+            if (position > count) position = 1;//数字位置，第六张时是第一张
+            if(titles != null && titles.length>0 && titleVisible){
+                tvTitle.setText(titles[(position - 1 + count) % count]);
+            }
+            //思路很简单：因为有错位，所以对应关系都是position-1，由于滑到两头的时候会造成position-1成负，或者超出实际数量，所以用+count再与count求模运算一下
+            switch (bannerStyle) {
+                case BannerConfig.CIRCLE_INDICATOR:
+                    indicatorViews.get((lastPosition - 1 + count) % count).setImageResource(indicatorUnSelectedSrc);
+                    indicatorViews.get((position - 1 + count) % count).setImageResource(indicatorSelectedSrc);
+                    lastPosition = position;
+                    break;
+                case BannerConfig.NUM_INDICATOR:
+                    //设置字体大小（绝对值,单位：像素）,第二个参数boolean dip，如果为true，表示前面的字体大小单位为dip，否则为像素
+                    SpannableString sStr = new SpannableString(position + "/" + count);
+                    //注意position的位数，如果是两位数三位数的情况
+                    sStr.setSpan(new AbsoluteSizeSpan(18,true), 0, String.valueOf(position).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    tvNumIndicator.setText(sStr);
+                    break;
+            }
+        }else{//不需要循环正常走
+            if(titles != null && titles.length>0 && titleVisible){
+                tvTitle.setText(titles[position]);
+            }
+            switch (bannerStyle) {
+                case BannerConfig.CIRCLE_INDICATOR:
+                    indicatorViews.get(lastPosition).setImageResource(indicatorUnSelectedSrc);
+                    indicatorViews.get(position).setImageResource(indicatorSelectedSrc);
+                    lastPosition = position;
+                    break;
+                case BannerConfig.NUM_INDICATOR:
+                    //设置字体大小（绝对值,单位：像素）,第二个参数boolean dip，如果为true，表示前面的字体大小单位为dip，否则为像素
+                    SpannableString sStr = new SpannableString(position+1 + "/" + count);
+                    //注意position的位数，如果是两位数三位数的情况
+                    sStr.setSpan(new AbsoluteSizeSpan(18,true), 0, String.valueOf(position+1).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    tvNumIndicator.setText(sStr);
+                    break;
+            }
         }
-        lastPosition = position;
     }
 
     @Override
@@ -386,17 +519,21 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
         currentItem = viewPager.getCurrentItem();
         switch (state) {
             case 0://No operation
-                if (currentItem == 0) {
-                    viewPager.setCurrentItem(count, false);
-                } else if (currentItem == count + 1) {
-                    viewPager.setCurrentItem(1, false);
+                if(isRecycle){//可以循环的话，滑到最后一个立马切换到第一个，统一往前滑到第0个，立马切换到最后一个
+                    if (currentItem == 0) {
+                        viewPager.setCurrentItem(count, false);
+                    } else if (currentItem == count + 1) {
+                        viewPager.setCurrentItem(1, false);
+                    }
                 }
                 break;
             case 1://start Sliding
-                if (currentItem == count + 1) {
-                    viewPager.setCurrentItem(1, false);
-                } else if (currentItem == 0) {
-                    viewPager.setCurrentItem(count, false);
+                if(isRecycle){
+                    if (currentItem == count + 1) {
+                        viewPager.setCurrentItem(1, false);
+                    } else if (currentItem == 0) {
+                        viewPager.setCurrentItem(count, false);
+                    }
                 }
                 break;
             case 2://end Sliding
@@ -469,7 +606,10 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
      * @return 下标从0开始
      */
     public int toRealPosition(int position) {
-        int realPosition = ((position - 1) + count ) % count;
+        int realPosition = position;
+        if(isRecycle){
+            realPosition = ((position - 1) + count ) % count;
+        }
         return realPosition;
     }
 
@@ -494,7 +634,7 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
      * 设置每个item的点击事件
      * @param onMyItemClickListener
      */
-    public void setOnItemClickLIstener(OnMyItemClickListener onMyItemClickListener){
+    public void setOnItemClickLIstener(OnBannerItemClickListener onMyItemClickListener){
         this.onMyItemClickListener = onMyItemClickListener;
     }
 
@@ -502,7 +642,7 @@ public class MyBanner extends FrameLayout implements ViewPager.OnPageChangeListe
      * 图片加载方式
      * @param imageLoader
      */
-    public void setImageLoader(MyImageLoaderInterface imageLoader) {
+    public void setImageLoader(ImageLoaderInterface imageLoader) {
         this.imageLoader = imageLoader;
     }
 

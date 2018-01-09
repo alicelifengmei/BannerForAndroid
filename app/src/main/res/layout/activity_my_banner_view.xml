@@ -1,153 +1,183 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-        <!--app:title_indicator_bg_color="@color/color_e5e5e5e5"-->
-    <com.example.administrator.mybannerdemo.mybannerview.MyBanner
-        android:id="@+id/my_banner"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        app:scroll_time="2000"
-        app:title_visible="true"
-        app:title_size="12sp"
-        app:title_gravity="center"
-        app:title_color="@color/color_666666"
-        app:indicator_width="4dp"
-        app:indicator_height="4dp"
-        app:indicator_margin_bottom="4dp"
-        app:indicator_margin_top="2dp"
-        app:indicator_gravity="center"
-        app:indicator_selected_src="@drawable/ic_page_indicator_focused"
-        app:indicator_unselected_src="@drawable/ic_page_indicator"
-        />
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
-            <Button
-                android:id="@+id/btn1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画1" />
-            <Button
-                android:id="@+id/btn2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画2" />
-            <Button
-                android:id="@+id/btn3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画3" />
-            <Button
-                android:id="@+id/btn4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画4" />
-            <Button
-                android:id="@+id/btn5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画5" />
-            <Button
-                android:id="@+id/btn6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画6" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
-            <Button
-                android:id="@+id/btn7"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画7" />
-            <Button
-                android:id="@+id/btn8"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画8" />
-            <Button
-                android:id="@+id/btn9"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画9" />
-            <Button
-                android:id="@+id/btn10"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画10" />
-            <Button
-                android:id="@+id/btn11"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画11" />
-            <Button
-                android:id="@+id/btn12"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画12" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
-            <Button
-                android:id="@+id/btn13"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画13" />
-            <Button
-                android:id="@+id/btn14"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画14" />
-            <Button
-                android:id="@+id/btn15"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画15" />
-            <Button
-                android:id="@+id/btn16"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画16" />
-            <Button
-                android:id="@+id/btn17"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onTapClick"
-                android:text="动画17" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
+        <!--app:title_indicator_bg_color="@color/color_e5e5e5e5"-->
+        <com.example.administrator.mybannerdemo.mybannerview.RecyclerBanner
+            android:id="@+id/my_banner"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            app:indicator_gravity="center"
+            app:indicator_height="4dp"
+            app:indicator_margin_bottom="4dp"
+            app:indicator_margin_top="2dp"
+            app:indicator_selected_src="@drawable/ic_page_indicator_focused"
+            app:indicator_unselected_src="@drawable/ic_page_indicator"
+            app:indicator_width="4dp"
+            app:scroll_time="2000"
+            app:title_color="@color/color_666666"
+            app:title_gravity="center"
+            app:title_size="12sp"
+            app:title_visible="true" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/btn1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画1" />
+
+                <Button
+                    android:id="@+id/btn2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画2" />
+
+                <Button
+                    android:id="@+id/btn3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画3" />
+
+                <Button
+                    android:id="@+id/btn4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画4" />
+
+                <Button
+                    android:id="@+id/btn5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画5" />
+
+                <Button
+                    android:id="@+id/btn6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画6" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/btn7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画7" />
+
+                <Button
+                    android:id="@+id/btn8"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画8" />
+
+                <Button
+                    android:id="@+id/btn9"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画9" />
+
+                <Button
+                    android:id="@+id/btn10"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画10" />
+
+                <Button
+                    android:id="@+id/btn11"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画11" />
+
+                <Button
+                    android:id="@+id/btn12"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画12" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/btn13"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画13" />
+
+                <Button
+                    android:id="@+id/btn14"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画14" />
+
+                <Button
+                    android:id="@+id/btn15"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画15" />
+
+                <Button
+                    android:id="@+id/btn16"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画16" />
+
+                <Button
+                    android:id="@+id/btn17"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onTapClick"
+                    android:text="动画17" />
+
+            </LinearLayout>
         </LinearLayout>
+
+        <com.example.administrator.mybannerdemo.mybannerview.RecyclerBanner
+            android:id="@+id/banner_num_no_recycle"
+            android:layout_width="match_parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_height="200dp"
+            app:title_visible="false"
+            />
     </LinearLayout>
-</LinearLayout>
+</android.support.v4.widget.NestedScrollView>

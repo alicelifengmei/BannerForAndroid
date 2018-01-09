@@ -10,7 +10,7 @@ import java.io.Serializable;
  * 图片加载接口，便于用户自己实现图片加载方式
  */
 
-public interface MyImageLoaderInterface<T extends View> extends Serializable {
+public interface ImageLoaderInterface<T extends View> extends Serializable {
 
     void displayImage(Context context, Object path, T imageView);
 

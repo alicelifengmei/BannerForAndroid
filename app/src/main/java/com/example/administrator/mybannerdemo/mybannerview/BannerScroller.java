@@ -9,18 +9,18 @@ import android.widget.Scroller;
  * 设置切换动画的时间间隔
  */
 
-public class MyBannerScroller extends Scroller {
+public class BannerScroller extends Scroller {
     private int mDuration = 800;
 
-    public MyBannerScroller(Context context) {
+    public BannerScroller(Context context) {
         super(context);
     }
 
-    public MyBannerScroller(Context context, Interpolator interpolator) {
+    public BannerScroller(Context context, Interpolator interpolator) {
         super(context, interpolator);
     }
 
-    public MyBannerScroller(Context context, Interpolator interpolator, boolean flywheel) {
+    public BannerScroller(Context context, Interpolator interpolator, boolean flywheel) {
         super(context, interpolator, flywheel);
     }
 
